@@ -1,0 +1,25 @@
+Jane Example
+City, State
+jane@example.com | github.com/jane
+
+TECHNICAL SKILLS
+Programming Languages: Python, JavaScript, SQL
+Web Technologies: HTML/CSS, React, Node
+Developer Tools: Git/GitHub, Linux, Docker
+Data: pandas, NumPy, REST APIs
+
+EDUCATION
+State University — B.S. Computer Science
+
+EXPERIENCE
+- Describe the roles, projects, and tools you've worked with in plain text.
+- The ranker reads this file, finds known skills in it, and scores jobs by how
+  well they match. The Skill Gaps tab then shows which in-demand skills from the
+  postings you haven't listed here yet.
+
+HOW TO USE THIS FILE
+Rename a copy of this to resume.txt (same folder), paste your own resume text in,
+and either restart LinkWatch or click "Reload extensions" in Settings. You can also
+paste your resume straight into the Resume tab of the Job Hunt panel, which writes
+resume.txt for you. resume.txt is gitignored, so it never gets pushed to the public
+repo.

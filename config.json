@@ -1,0 +1,83 @@
+{
+  "_comment": "Tune the Job Hunt ranker here. To personalize it for ANY resume, drop a plain-text 'resume.txt' (or resume.md) in this folder — or paste one into the Resume tab in the app: the ranker reads it and scores jobs against the skills it finds (matched against skillVocabulary below), and the Skill Gaps tab tells you which vocabulary skills the postings want that your resume is missing. With no resume file it falls back to the fixed skillWeights. Matching is keyword-based and explainable. Edit, then click 'Reload extensions' in Settings (no restart needed).",
+
+  "fetchDescriptions": true,
+  "maxFetch": 25,
+  "concurrency": 4,
+  "fetchTimeoutMs": 9000,
+  "sortBy": "score",
+  "hideBelow": null,
+  "dedupe": true,
+  "experienceFirst": true,
+
+  "resumeFile": "resume.txt",
+  "resumePath": null,
+
+  "_gap_comment": "Skill Gaps tab: gapTopN caps how many missing skills are listed; gapMinLen ignores very short vocabulary tokens when scanning descriptions.",
+  "gapTopN": 20,
+  "gapMinLen": 3,
+
+  "_skillVocabulary_comment": "Skills to look for in a resume AND to spot as in-demand in job descriptions. Add your field's terms; leave empty to use the built-in list. Avoid 1–2 letter tokens (they over-match).",
+  "skillVocabulary": [
+    "python", "java", "c++", "c#", "javascript", "typescript", "sql", "html", "css",
+    "golang", "rust", "kotlin", "swift", "php", "ruby", "scala", "matlab", "bash", "lua",
+    "react", "angular", "vue", "node", "django", "flask", "spring", ".net", "express",
+    "pandas", "numpy", "pytorch", "tensorflow", "scikit-learn", "streamlit", "folium", "tkinter",
+    "rest", "graphql", "api", "microservices", "docker", "kubernetes", "terraform",
+    "aws", "azure", "gcp", "linux", "git", "github", "gitlab", "ci/cd", "jenkins",
+    "postgres", "mysql", "mongodb", "redis", "database", "etl", "spark", "kafka",
+    "machine learning", "deep learning", "data structures", "algorithms", "data analysis",
+    "tableau", "power bi", "excel", "sas",
+    "testing", "test automation", "selenium", "cypress", "qa", "quality assurance", "jira",
+    "agile", "scrum", "arcgis", "gis", "autocad", "solidworks", "figma",
+    "project management", "salesforce", "accounting", "marketing", "seo"
+  ],
+
+  "_skillWeights_comment": "Fallback only — used when no resume file is present.",
+  "skillWeights": {
+    "python": 3, "java": 3, "c++": 3, "javascript": 3, "sql": 3, " c ": 2, "c programming": 2,
+    "html": 2, "css": 2, "typescript": 1, "rest": 2, "api": 2, "web": 1,
+    "git": 2, "github": 2, "linux": 2, "docker": 2, "pandas": 2, "numpy": 2,
+    "streamlit": 1, "arcgis": 2, "gis": 2, "agile": 1,
+    "machine learning": 1, "ml": 1, "artificial intelligence": 1, "data structures": 1,
+    "algorithms": 1, "debugging": 1, "qa": 2, "testing": 2, "test automation": 2,
+    "quality assurance": 1, "database": 2
+  },
+
+  "softwareIndicators": [
+    "software", "engineer", "developer", "swe", "sde", "backend", "back end",
+    "frontend", "front end", "full stack", "fullstack", "web", "data",
+    "machine learning", " ml ", " ai ", "qa", "test", "sdet", "programmer",
+    "python", "java", "devops", "platform", "api"
+  ],
+
+  "titleGood": [
+    "software engineer", "software developer", "swe", "sde", "backend", "back end",
+    "frontend", "front end", "full stack", "fullstack", "web developer",
+    "python developer", "java developer", "developer", "programmer",
+    "qa engineer", "test engineer", "sdet", "automation engineer", "data engineer"
+  ],
+
+  "titleBad": [
+    "mechanical", "controls", "control systems", "industrial", "field service",
+    "hardware", "civil", "chemical", "biomedical", "refinery", "cnc", "tool design",
+    "sales engineer", "manufacturing", "electrical engineer", "process engineer",
+    "instrument", "network engineer", "validation engineer", "quality engineer"
+  ],
+
+  "entrySignals": [
+    "new grad", "new graduate", "entry level", "entry-level", "junior", "jr.",
+    "recent graduate", "recent grad", "university graduate", "0-2 years",
+    "0 to 2 years", "early career", "associate software", "campus"
+  ],
+
+  "seniorSignals": [
+    "senior", "sr.", "staff", "principal", "lead engineer", "team lead", "director",
+    "10+ years", "9+ years", "8+ years", "7+ years", "6+ years", "5+ years",
+    "manager,", "head of", "architect"
+  ],
+
+  "clearanceSignals": [
+    "security clearance", "secret clearance", "ts/sci", "active clearance", "polygraph"
+  ]
+}

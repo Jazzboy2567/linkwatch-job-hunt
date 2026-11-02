@@ -1,0 +1,11 @@
+# Personal resume — never commit to the public repo (use the private copy for that)
+resume.txt
+resume.md
+
+# Fetched job-description cache (rebuilt on demand)
+.cache/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.log

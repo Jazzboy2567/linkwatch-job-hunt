@@ -1,0 +1,28 @@
+{
+  "id": "job-hunt",
+  "name": "Job Hunt",
+  "type": "ranker",
+  "version": "1.0.0",
+  "order": 10,
+  "author": "LinkWatch",
+  "main": "index.js",
+  "enabledByDefault": false,
+  "description": "Your LinkWatch job-hunt cockpit. Ranks every scraped job against your resume (fetching the real description when it can), floats the best entry-level matches to the top, and tells you which in-demand skills the postings want that your resume is missing — so you know what to learn next. Adds a Job Hunt tab to track applications, view/update the resume it scores against, and see your skill gaps, plus a \"+ Track\" button on each result. Your resume and application list never leave this machine.",
+  "panel": {
+    "title": "Job Hunt",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"M21 21l-4.3-4.3\"/><path d=\"M8.5 11l1.8 1.8 3.4-3.6\"/></svg>",
+    "entry": "panel.js",
+    "css": "panel.css"
+  },
+  "rowActions": [
+    {
+      "id": "track",
+      "label": "+ Track",
+      "activeLabel": "✓ Tracked",
+      "title": "Add to your Job Hunt tracker",
+      "activeTitle": "Already in your applications",
+      "method": "track",
+      "activeUrlsMethod": "trackedUrls"
+    }
+  ]
+}
