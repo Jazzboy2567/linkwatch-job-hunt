@@ -46,7 +46,7 @@ const DEFAULTS = {
   resumeFile: 'resume.txt', resumePath: null,
   skillVocabulary: [], skillWeights: {}, softwareIndicators: [],
   titleGood: [], titleBad: [], entrySignals: [], seniorSignals: [], clearanceSignals: [],
-  gapTopN: 20, gapMinLen: 3,
+  gapTopN: 20, gapMinLen: 3, gapWindowDays: 30,
 };
 
 // Fallback vocabulary used to read skills out of a resume (and to spot in-demand
@@ -434,7 +434,19 @@ async function rank(links, ctx) {
       resumeSkillCount: resumeSkillSet().size,
       missing: top,
     };
-    try { store.set('gaps', snap); } catch (_) {}
+    try {
+      const d = store.all();
+      d.gaps = snap;   // last-scrape snapshot (kept for the "This scrape" view + back-compat)
+      // Rolling log of every scrape's raw gap counts, so the panel can show what KEEPS
+      // coming up across recent scrapes — far more actionable than one noisy run. Each
+      // scheduled run only scores jobs it hasn't seen before, so summing counts across
+      // runs counts distinct postings, not the same job over and over.
+      const log = Array.isArray(d.gapLog) ? d.gapLog : [];
+      log.unshift({ at: snap.computedAt, jobs: gapJobs, counts: gapCount });
+      const cutoff = Date.now() - (CFG.gapWindowDays || 30) * 86400000;
+      d.gapLog = log.filter(e => { const t = Date.parse(e.at); return isNaN(t) || t >= cutoff; }).slice(0, 200);
+      store.replace(d);
+    } catch (_) {}
     try { emitFn('gaps-updated', snap); } catch (_) {}
   }
 
@@ -505,6 +517,42 @@ function migrateApps(host) {
   }
 }
 
+// ── Skill gaps report (last scrape + cumulative over a rolling window) ───────
+// Aggregates the per-scrape gapLog so the panel can show which missing skills keep
+// coming up, not just those from the most recent run. `count` is total postings across
+// the window that wanted a skill; `runs` is how many scrapes it showed up in.
+function gapsReport() {
+  const d = store ? store.all() : {};
+  const lastRun = d.gaps || null;
+  const log = Array.isArray(d.gapLog) ? d.gapLog : [];
+  const windowDays = CFG.gapWindowDays || 30;
+  const cutoff = Date.now() - windowDays * 86400000;
+  const recent = log.filter(e => { const t = Date.parse(e.at); return isNaN(t) || t >= cutoff; });
+
+  const totals = {}, runsWith = {};
+  let jobs = 0;
+  for (const e of recent) {
+    jobs += e.jobs || 0;
+    for (const [s, n] of Object.entries(e.counts || {})) {
+      totals[s]   = (totals[s]   || 0) + n;
+      runsWith[s] = (runsWith[s] || 0) + 1;
+    }
+  }
+  const missing = Object.keys(totals)
+    .map(s => ({ skill: s, count: totals[s], runs: runsWith[s] }))
+    .sort((a, b) => (b.count - a.count) || (b.runs - a.runs))
+    .slice(0, CFG.gapTopN || 20);
+
+  return {
+    lastRun,
+    window: {
+      days: windowDays, scrapes: recent.length, jobsAnalyzed: jobs,
+      resumeSource: WEIGHTS_SOURCE, resumeSkillCount: resumeSkillSet().size,
+      missing,
+    },
+  };
+}
+
 // ── Resume view / update (panel) ────────────────────────────────────────────
 function resumeInfo() {
   const names = Object.keys(WEIGHTS).sort((a, b) => (WEIGHTS[b] - WEIGHTS[a]) || a.localeCompare(b));
@@ -570,7 +618,8 @@ function init(host) {
     host.ipc.handle('saveResume', (p) => saveResume(p));
 
     // Skill gaps
-    host.ipc.handle('getGaps', () => (store.get('gaps') || null));
+    host.ipc.handle('getGaps', () => (store.get('gaps') || null));   // last scrape (back-compat)
+    host.ipc.handle('gapsReport', () => gapsReport());                // last scrape + cumulative window
   }
 }
 

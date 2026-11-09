@@ -9,6 +9,7 @@
   ];
   const LABEL = Object.fromEntries(STATUSES);
   let activeTab = 'applications';
+  let gapMode = 'window';   // 'window' = cumulative over recent scrapes, 'last' = most recent scrape
 
   async function render(root, ctx) {
     const esc = ctx.esc;
@@ -158,10 +159,17 @@
   // ── Skill Gaps ────────────────────────────────────────────────────────────
   async function renderGaps(view, ctx) {
     const esc = ctx.esc;
-    let gaps = null;
-    try { gaps = await ctx.invoke('getGaps'); } catch (_) {}
+    let rep = null;
+    try { rep = await ctx.invoke('gapsReport'); } catch (_) {}
+    // Fallback for an older backend that only has getGaps (last scrape).
+    if (!rep) {
+      try { const g = await ctx.invoke('getGaps'); rep = g ? { lastRun: g, window: null } : null; } catch (_) {}
+    }
 
-    if (!gaps || !gaps.missing || !gaps.missing.length) {
+    const win  = rep && rep.window  && rep.window.missing  && rep.window.missing.length  ? rep.window  : null;
+    const last = rep && rep.lastRun && rep.lastRun.missing && rep.lastRun.missing.length ? rep.lastRun : null;
+
+    if (!win && !last) {
       view.innerHTML = `
         <div class="panel-head"><span class="panel-title">SKILL GAPS</span></div>
         <div class="jh-body"><div class="jh-empty">
@@ -170,27 +178,54 @@
       return;
     }
 
-    const max = gaps.missing[0].count || 1;
-    const when = (() => { try { return new Date(gaps.computedAt).toLocaleString(); } catch { return ''; } })();
-    const bars = gaps.missing.map(g => {
+    // Pick the view, falling back to whichever has data.
+    let mode = gapMode;
+    if (mode === 'window' && !win) mode = 'last';
+    if (mode === 'last'   && !last) mode = 'window';
+    const src  = mode === 'window' ? win : last;
+    const days = win ? win.days : 30;
+
+    const max = src.missing[0].count || 1;
+    const when = last ? (() => { try { return new Date(last.computedAt).toLocaleString(); } catch { return ''; } })() : '';
+    const bars = src.missing.map(g => {
       const pct = Math.max(6, Math.round((g.count / max) * 100));
-      return `<div class="jh-gap">
+      const sub = (mode === 'window' && g.runs) ? ` title="in ${g.runs} scrape${g.runs === 1 ? '' : 's'}"` : '';
+      return `<div class="jh-gap"${sub}>
         <div class="jh-gap-name">${esc(g.skill)}</div>
         <div class="jh-gap-bar"><div class="jh-gap-fill" style="width:${pct}%"></div></div>
         <div class="jh-gap-count">${g.count}</div>
       </div>`;
     }).join('');
 
+    const toggle = (win && last) ? `
+      <div class="panel-head-right jh-gap-toggle">
+        <button class="btn ${mode === 'window' ? 'primary' : ''}" data-m="window">Last ${days}d</button>
+        <button class="btn ${mode === 'last' ? 'primary' : ''}" data-m="last">This scrape</button>
+      </div>` : '';
+
+    const note = mode === 'window'
+      ? `In-demand skills that <b>aren't on your resume</b>, totaled across the last <b>${days} days</b> of scrapes. The number is how many postings asked for each — the ones that keep showing up are worth learning first.`
+      : `In-demand skills from the <b>last scrape's</b> job descriptions that <b>aren't on your resume</b> yet. The number is how many postings asked for each.`;
+
+    const foot = mode === 'window'
+      ? `Across ${src.scrapes} scrape${src.scrapes === 1 ? '' : 's'} · ${src.jobsAnalyzed} description${src.jobsAnalyzed === 1 ? '' : 's'} · resume source: ${esc(src.resumeSource || 'none')}`
+      : `Based on ${src.jobsAnalyzed} description${src.jobsAnalyzed === 1 ? '' : 's'} · resume source: ${esc(src.resumeSource || 'none')}${when ? ' · ' + esc(when) : ''}`;
+
     view.innerHTML = `
       <div class="panel-head">
         <span class="panel-title">SKILL GAPS</span>
-        <span class="panel-sub">${gaps.jobsAnalyzed} posting${gaps.jobsAnalyzed === 1 ? '' : 's'}</span>
+        <span class="panel-sub">${src.jobsAnalyzed} posting${src.jobsAnalyzed === 1 ? '' : 's'}</span>
+        ${toggle}
       </div>
       <div class="jh-body">
-        <div class="jh-note">In-demand skills from the last scrape's job descriptions that <b>aren't on your resume</b> yet. The number is how many postings asked for each — work down from the top.</div>
+        <div class="jh-note">${note}</div>
         <div class="jh-gaps">${bars}</div>
-        <div class="jh-foot">Based on ${gaps.jobsAnalyzed} description${gaps.jobsAnalyzed === 1 ? '' : 's'} · resume source: ${esc(gaps.resumeSource || 'none')}${when ? ' · ' + esc(when) : ''}</div>
+        <div class="jh-foot">${foot}</div>
       </div>`;
+
+    view.querySelectorAll('.jh-gap-toggle button').forEach(b => {
+      b.onclick = () => { gapMode = b.dataset.m; renderGaps(view, ctx); };
+    });
   }
 
   LW.registerPanel('job-hunt', { render });

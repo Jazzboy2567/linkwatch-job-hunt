@@ -32,6 +32,10 @@
   font-family: var(--font-mono); font-size: 11px; line-height: 1.5; padding: 8px 10px; }
 .jh-resume-text:focus { border-color: var(--line2); outline: none; }
 
+/* Skill gaps: window / last-scrape toggle */
+.jh-gap-toggle { display: inline-flex; gap: 4px; }
+.jh-gap-toggle .btn { padding: 2px 8px; font-size: 10px; }
+
 /* Skill gap bars */
 .jh-gaps { display: flex; flex-direction: column; gap: 6px; }
 .jh-gap { display: grid; grid-template-columns: 130px 1fr 28px; align-items: center; gap: 10px; }
